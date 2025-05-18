@@ -6,8 +6,18 @@ import java.util.ArrayList;
 
 public class GamePanel extends JPanel implements Runnable {
     //Initialize Constants
-    private final int GRAVITY = 1;
-    private final int MAX_DOWN_ACCELERATION = 10;
+    private final int PLATFORM_SPACING = 70;
+    private final int PLATFORM_START_Y = 620;
+    private final int PLATFORM_MIN_Y = 200;
+    private final int PLATFORM_MIN_X = 100;
+    private final int PLATFORM_RANDOM_X = 550;
+    private final int PLATFORM_WIDTH = 200;
+    private final int PLATFORM_HEIGHT = 20;
+    private final int UPDATES_PER_SECOND = 60;
+    private final int COIN_SPAWN_DELAY = 1000;
+    private final int INITIAL_PLAYER_X = 500;
+    private final int INITIAL_PLAYER_Y = 200;
+    private final int GROUND_OFFSET = 70;
     private int GROUND_LEVEL; //is a constant but gets initialized on game start, otherwise the game breaks
     
     //Initialize Objects
@@ -15,23 +25,14 @@ public class GamePanel extends JPanel implements Runnable {
     private Player player;
     private ArrayList<Rectangle> platforms = new ArrayList<>();
     private Ellipse2D.Double[] coins;
+    private GameEngine engine;
+    private GameRenderer renderer;
     
     //Initialize Toggles
     private boolean devMode = false;
     private boolean gameOver = false;
     private boolean leftPressed = false;
     private boolean rightPressed = false;
-    private boolean isJumping = false;
-    private boolean isOnPlatform = false;
-    private boolean isFalling =false;
-    private boolean canDoubleJump = false;
-    private boolean isDoubleJumping = false;
-    
-    //initialize vertical velocity
-    private int verticalVelocity = 0;
-    
-    //get the current time to calculate coin spawn timing
-    private long lastCoinTime = System.currentTimeMillis();
 
     //Constructor
     public GamePanel() {
@@ -57,19 +58,19 @@ public class GamePanel extends JPanel implements Runnable {
 
         //Initialize thread and player objects
         gameThread = new Thread(this);
-        player = new Player(500, 200);
+        player = new Player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
+        renderer = new GameRenderer();
 
         //Initialize platforms with random horizontal values
-        platforms.add(new Rectangle((int) (Math.random()*550)+100, 600, 200, 20));
-        platforms.add(new Rectangle((int) (Math.random()*550)+100, 550, 200, 20));
-        platforms.add(new Rectangle((int) (Math.random()*550)+100, 480, 200, 20));
-        platforms.add(new Rectangle((int) (Math.random()*550)+100, 410, 200, 20));
-        platforms.add(new Rectangle((int) (Math.random()*550)+100, 340, 200, 20));
-        platforms.add(new Rectangle((int) (Math.random()*550)+100, 250, 200, 20));
-        platforms.add(new Rectangle((int) (Math.random()*550)+100, 200, 200, 20));
+        for (int y = PLATFORM_START_Y; y >= PLATFORM_MIN_Y; y -= PLATFORM_SPACING) {
+            platforms.add(new Rectangle((int) (Math.random() * PLATFORM_RANDOM_X) + PLATFORM_MIN_X, y, PLATFORM_WIDTH, PLATFORM_HEIGHT));
+        }
 
         //Initialize coin array
         coins = new Ellipse2D.Double[platforms.size()];
+
+        //Initialize the game engine and start the game
+        engine = new GameEngine(player, platforms, coins);
 
         //Start thread
         gameThread.start();
@@ -89,7 +90,8 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
         //Set ground level
-        GROUND_LEVEL = getHeight() - 70;
+        GROUND_LEVEL = getHeight() - GROUND_OFFSET;
+        engine.setGroundLevel(GROUND_LEVEL);
 
         //The infinite game loop! (until you lose ofc)
         //Updates 60 times a second
@@ -97,7 +99,7 @@ public class GamePanel extends JPanel implements Runnable {
             update();
             repaint();
             try{
-                Thread.sleep(1000/60);
+                Thread.sleep(COIN_SPAWN_DELAY / UPDATES_PER_SECOND);
             }catch(InterruptedException e){
                 e.printStackTrace();
             }
@@ -133,122 +135,18 @@ public class GamePanel extends JPanel implements Runnable {
     //The Key listener has a delay for long key presses which results in clunky movement, this here solves it by using booleans as states
     private void updateMovement(){
         if (leftPressed) {
-            player.moveLeft();
+            engine.moveLeft();
         }
         if (rightPressed) {
-            player.moveRight();
-        }
-    }
-    
-    //All the physics happen here. Gravity, Collisions
-    private void applyPhysics(){
-        
-        //Apply gravity and check for ground collisions
-        if (!isOnPlatform && player.getPlayerY() < GROUND_LEVEL - player.getPlayerHeight()) {
-            if (verticalVelocity > MAX_DOWN_ACCELERATION) {
-                verticalVelocity = MAX_DOWN_ACCELERATION;
-            }
-            verticalVelocity += GRAVITY;
-        }else if (!isOnPlatform && !isJumping) {
-            player.setPlayerY(GROUND_LEVEL - player.getPlayerHeight());
-            verticalVelocity = 0;
-        }
-
-        //Check for platform collisions
-        for (Rectangle platform : platforms) {
-            if ((!isJumping || (!isDoubleJumping && isFalling))
-                    && doesTopIntersect(player.getPlayerX(),
-                    player.getPlayerY() + (player.getPlayerHeight()/2 + player.getPlayerHeight()/4),
-                    player.getPlayerX() + player.getPlayerWidth(),
-                    player.getPlayerY() + player.getPlayerHeight(),
-                    platform.x, platform.y, platform.x + platform.width,
-                    platform.y + platform.height)) {
-                player.setPlayerY(platform.y - player.getPlayerHeight());
-                verticalVelocity = 0;
-                isOnPlatform = true;
-                break;
-            }else {
-                isOnPlatform = false;
-            }
-        }
-
-        //Reset Jumping check when the player starts falling
-        if(verticalVelocity==0){
-            isJumping = false;
-        }
-        
-        //Reset DoubleJumping check when the player touches any ground surface
-        if(isOnPlatform || player.getPlayerY() == GROUND_LEVEL - player.getPlayerHeight()){
-            isDoubleJumping = false;
-        }
-        
-        //Toggle falling check depending on the current vertical velocity
-        isFalling = verticalVelocity > 0;
-
-        //Update vertical position
-        player.setPlayerY(player.getPlayerY() + verticalVelocity);
-
-        //Keep the player within horizontal bounds
-        if (player.getPlayerX() < 0) {
-            player.setPlayerX(0);
-        } else if (player.getPlayerX() > getWidth() - player.getPlayerWidth()) {
-            player.setPlayerX(getWidth() - player.getPlayerWidth());
-        }
-
-        //Keep the player within vertical bounds
-        if (player.getPlayerY() < 0) {
-            player.setPlayerY(0);
-        } else if (player.getPlayerY() > GROUND_LEVEL) {
-            //If the player happens to fall below the ground level, the game ends
-            gameOver = true;
-        }
-
-    }
-    
-    //This method checks if the player is colliding with any coin
-    //Removes the coin and increments the player score on collision
-    private void checkCoinCollisions(){
-        for(int i=0;i<coins.length;i++){
-            if(coins[i]==null)continue;
-            if(player.getPlayerRect().intersects(coins[i].x,coins[i].y,coins[i].width,coins[i].height)){
-                player.setPlayerScore(player.getPlayerScore()+1);
-                coins[i]=null;
-            }
-        }
-    }
-    
-    //This method respawns coins randomly every second
-    private void spawnCoins(){
-        int i = (int) (Math.random()*7);
-            if(coins[i]==null) {
-                long currentTime = System.currentTimeMillis();
-                if (currentTime - lastCoinTime >= 1000) {
-                    coins[i] = new Ellipse2D.Double(platforms.get(i).x + (double) platforms.get(i).width / 2 - 10, platforms.get(i).y + (double) platforms.get(i).height / 2 - 50, 20, 20);
-                    lastCoinTime = currentTime;
-                }
-            }
-    }
-    
-    //This method checks for possible power ups based on the player score
-    private void checkPowerUps(){
-        if(player.getPlayerScore()>=30){
-            player.setplayerSpeed(6);
-        }
-        if(player.getPlayerScore()>=50){
-            player.setjumpStrength(-18);
-        }
-        if(player.getPlayerScore()>=100){
-            canDoubleJump=true;
+            engine.moveRight();
         }
     }
 
     //The update method gets called inside the game loop
     private void update(){
         updateMovement();
-        applyPhysics();
-        checkCoinCollisions();
-        spawnCoins();
-        checkPowerUps();
+        engine.update();
+        gameOver=engine.isGameOver();
     }
 
     //Method to handle key down events
@@ -264,12 +162,8 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
         //Space key for jumping and double jumping
-        if (key == KeyEvent.VK_SPACE && (player.getPlayerY() >= GROUND_LEVEL - player.getPlayerHeight() || isOnPlatform)) {
-            verticalVelocity = player.getjumpStrength();
-            isJumping = true;
-        }else if(key==KeyEvent.VK_SPACE && canDoubleJump && !isDoubleJumping){
-            verticalVelocity = player.getjumpStrength();
-            isDoubleJumping = true;
+        if (key == KeyEvent.VK_SPACE ){
+            engine.jump();
         }
 
         //D key for Dev Mode toggle
@@ -292,61 +186,11 @@ public class GamePanel extends JPanel implements Runnable {
 
     //This method draws everything on the panel
     @Override
-    protected void paintComponent(Graphics g){
+    protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        //Draw the ground line
-        g.setColor(Color.WHITE);
-        g.drawLine(0,getHeight()-70,getWidth(),getHeight()-70);
-        g.setColor(Color.GREEN);
-        g.fillRect(player.getPlayerX(), player.getPlayerY(), player.getPlayerWidth(), player.getPlayerHeight());
-
-        //Draw platforms
-        g.setColor(Color.GRAY);
-        for (Rectangle platform : platforms) {
-            g.fillRect(platform.x, platform.y, platform.width, platform.height);
-        }
-
-        //Draw coins
-        g.setColor(Color.YELLOW);
-        for (Ellipse2D.Double coin : coins) {
-            if(coin==null)continue;
-            g.fillOval((int) coin.x, (int) coin.y, (int) coin.width, (int) coin.height);
-        }
-
-        //Draw score
-        g.setColor(Color.GREEN);
-        g.setFont(new Font("Arial",Font.ITALIC,20));
-        g.drawString("Score: "+player.getPlayerScore(),50,50);
-
-        //Draw a game over message when the game is over
-        if(gameOver){
-            g.setColor(Color.RED);
-            g.setFont(new Font("Arial",Font.BOLD,30));
-            g.drawString("GAME OVER",getWidth()/2-150,getHeight()/2);
-        }
-
-        //Draw variables on the panel for debugging AKA Dev Mode
-        if(devMode){
-        g.setColor(Color.RED);
-        g.setFont(new Font("Arial",Font.ITALIC,14));
-        g.drawString("X: "+player.getPlayerX(),getWidth()-50,getHeight()-70);
-        g.setColor(Color.RED);
-        g.setFont(new Font("Arial",Font.ITALIC,14));
-        g.drawString("Y: "+player.getPlayerY(),getWidth()-130,getHeight()-70);
-        g.setColor(Color.RED);
-        g.setFont(new Font("Arial",Font.ITALIC,14));
-        g.drawString("Jumping: "+isJumping,getWidth()-130,getHeight()-120);
-        g.setColor(Color.RED);
-        g.setFont(new Font("Arial",Font.ITALIC,14));
-        g.drawString("VV: "+verticalVelocity,getWidth()-130,getHeight()-170);
-        g.setColor(Color.RED);
-        g.setFont(new Font("Arial",Font.ITALIC,14));
-        g.drawString("Falling: "+isFalling,getWidth()-130,getHeight()-210);
-        g.setColor(Color.RED);
-        g.setFont(new Font("Arial",Font.ITALIC,14));
-        g.drawString("DoubleJumping: "+isDoubleJumping,getWidth()-130,getHeight()-260);
-    }
+        //Render graphics
+        renderer.render(g, engine, engine.getPlayer(), platforms, coins, devMode, gameOver, GROUND_LEVEL, this);
     }
 
 }
