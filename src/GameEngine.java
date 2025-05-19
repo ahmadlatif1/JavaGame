@@ -19,19 +19,6 @@ public class GameEngine {
 
     private long lastCoinTime = System.currentTimeMillis();
 
-    // Constants
-    private final int GRAVITY = 1;
-    private final int MAX_DOWN_ACCELERATION = 10;
-    private final int COIN_SIZE = 20;
-    private final int COIN_OFFSET_X = 10;
-    private final int COIN_OFFSET_Y = 50;
-    private final int COIN_SPAWN_DELAY = 1000;
-    private final int POWER_UP_SPEED_SCORE = 30;
-    private final int POWER_UP_JUMP_SCORE = 50;
-    private final int POWER_UP_DOUBLE_JUMP_SCORE = 100;
-    private final int POWER_UP_SPEED = 6;
-    private final int POWER_UP_JUMP_STRENGTH = -18;
-
     public GameEngine(Player player, ArrayList<Rectangle> platforms, Ellipse2D.Double[] coins) {
         this.player = player;
         this.platforms = platforms;
@@ -99,10 +86,10 @@ public class GameEngine {
     // Handles game physics including gravity, platform collision, and boundaries
     private void applyPhysics() {
         if (!isOnPlatform && player.getPlayerY() < groundLevel - player.getPlayerHeight()) {
-            if (verticalVelocity > MAX_DOWN_ACCELERATION) {
-                verticalVelocity = MAX_DOWN_ACCELERATION;
+            if (verticalVelocity > GameConfig.MAX_DOWN_ACCELERATION) {
+                verticalVelocity = GameConfig.MAX_DOWN_ACCELERATION;
             }
-            verticalVelocity += GRAVITY;
+            verticalVelocity += GameConfig.GRAVITY;
         } else if (!isOnPlatform && !isJumping) {
             player.setPlayerY(groundLevel - player.getPlayerHeight());
             verticalVelocity = 0;
@@ -164,9 +151,9 @@ public class GameEngine {
         int i = (int) (Math.random() * coins.length);
         if (coins[i] == null) {
             long currentTime = System.currentTimeMillis();
-            if (currentTime - lastCoinTime >= COIN_SPAWN_DELAY) {
-                coins[i] = new Ellipse2D.Double(platforms.get(i).x + (double) platforms.get(i).width / 2 - COIN_OFFSET_X,
-                        platforms.get(i).y + (double) platforms.get(i).height / 2 - COIN_OFFSET_Y, COIN_SIZE, COIN_SIZE);
+            if (currentTime - lastCoinTime >= GameConfig.COIN_SPAWN_DELAY) {
+                coins[i] = new Ellipse2D.Double(platforms.get(i).x + (double) platforms.get(i).width / 2 - GameConfig.COIN_OFFSET_X,
+                        platforms.get(i).y + (double) platforms.get(i).height / 2 - GameConfig.COIN_OFFSET_Y, GameConfig.COIN_SIZE, GameConfig.COIN_SIZE);
                 lastCoinTime = currentTime;
             }
         }
@@ -174,13 +161,13 @@ public class GameEngine {
 
     // Activates power-ups based on player's score
     private void checkPowerUps() {
-        if (player.getPlayerScore() >= POWER_UP_SPEED_SCORE) {
-            player.setplayerSpeed(POWER_UP_SPEED);
+        if (player.getPlayerScore() >= GameConfig.POWER_UP_SPEED_SCORE) {
+            player.setplayerSpeed(GameConfig.POWER_UP_SPEED);
         }
-        if (player.getPlayerScore() >= POWER_UP_JUMP_SCORE) {
-            player.setjumpStrength(POWER_UP_JUMP_STRENGTH);
+        if (player.getPlayerScore() >= GameConfig.POWER_UP_JUMP_SCORE) {
+            player.setjumpStrength(GameConfig.POWER_UP_JUMP_STRENGTH);
         }
-        if (player.getPlayerScore() >= POWER_UP_DOUBLE_JUMP_SCORE) {
+        if (player.getPlayerScore() >= GameConfig.POWER_UP_DOUBLE_JUMP_SCORE) {
             canDoubleJump = true;
         }
     }

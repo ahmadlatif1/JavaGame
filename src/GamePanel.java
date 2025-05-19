@@ -6,18 +6,6 @@ import java.util.ArrayList;
 
 public class GamePanel extends JPanel implements Runnable {
     //Initialize Constants
-    private final int PLATFORM_SPACING = 70;
-    private final int PLATFORM_START_Y = 620;
-    private final int PLATFORM_MIN_Y = 200;
-    private final int PLATFORM_MIN_X = 100;
-    private final int PLATFORM_RANDOM_X = 550;
-    private final int PLATFORM_WIDTH = 200;
-    private final int PLATFORM_HEIGHT = 20;
-    private final int UPDATES_PER_SECOND = 60;
-    private final int COIN_SPAWN_DELAY = 1000;
-    private final int INITIAL_PLAYER_X = 500;
-    private final int INITIAL_PLAYER_Y = 200;
-    private final int GROUND_OFFSET = 70;
     private int GROUND_LEVEL; //is a constant but gets initialized on game start, otherwise the game breaks
     
     //Initialize Objects
@@ -58,19 +46,21 @@ public class GamePanel extends JPanel implements Runnable {
 
         //Initialize thread and player objects
         gameThread = new Thread(this);
-        player = new Player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
-        renderer = new GameRenderer();
+        player = new Player(GameConfig.INITIAL_PLAYER_X, GameConfig.INITIAL_PLAYER_Y);
 
         //Initialize platforms with random horizontal values
-        for (int y = PLATFORM_START_Y; y >= PLATFORM_MIN_Y; y -= PLATFORM_SPACING) {
-            platforms.add(new Rectangle((int) (Math.random() * PLATFORM_RANDOM_X) + PLATFORM_MIN_X, y, PLATFORM_WIDTH, PLATFORM_HEIGHT));
+        for (int y = GameConfig.PLATFORM_START_Y; y >= GameConfig.PLATFORM_END_Y; y -= GameConfig.PLATFORM_SPACING) {
+            platforms.add(new Rectangle((int) (Math.random() * GameConfig.PLATFORM_MAX_X) + GameConfig.PLATFORM_MIN_X, y, GameConfig.PLATFORM_WIDTH, GameConfig.PLATFORM_HEIGHT));
         }
 
         //Initialize coin array
         coins = new Ellipse2D.Double[platforms.size()];
 
-        //Initialize the game engine and start the game
+        //Initialize the game engine
         engine = new GameEngine(player, platforms, coins);
+
+        //Initialize renderer
+        renderer = new GameRenderer();
 
         //Start thread
         gameThread.start();
@@ -90,7 +80,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
         //Set ground level
-        GROUND_LEVEL = getHeight() - GROUND_OFFSET;
+        GROUND_LEVEL = getHeight() - GameConfig.GROUND_OFFSET;
         engine.setGroundLevel(GROUND_LEVEL);
 
         //The infinite game loop! (until you lose ofc)
@@ -99,7 +89,7 @@ public class GamePanel extends JPanel implements Runnable {
             update();
             repaint();
             try{
-                Thread.sleep(COIN_SPAWN_DELAY / UPDATES_PER_SECOND);
+                Thread.sleep(GameConfig.FRAME_TIME);
             }catch(InterruptedException e){
                 e.printStackTrace();
             }

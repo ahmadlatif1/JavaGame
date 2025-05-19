@@ -10,11 +10,11 @@ public class GameRenderer {
 
         // Clear background
         g2d.setColor(Color.BLACK);
-        g2d.fillRect(0, 0, 1000, 800); // You can parameterize this
+        g2d.fillRect(0, 0, panel.getWidth(), panel.getHeight());
 
         // Draw ground
         g2d.setColor(Color.WHITE);
-        g2d.drawLine(0, groundLevel, 1000, groundLevel);
+        g2d.drawLine(0, groundLevel, panel.getWidth(), groundLevel);
 
         // Draw player
         g2d.setColor(Color.GREEN);
@@ -50,8 +50,8 @@ public class GameRenderer {
         if (devMode) {
             g2d.setColor(Color.RED);
             g2d.setFont(new Font("Arial", Font.ITALIC, 14));
-            g.drawString("X: "+engine.getPlayer().getPlayerX(),panel.getWidth()-50,panel.getHeight()-70);
-            g.drawString("Y: "+engine.getPlayer().getPlayerY(),panel.getWidth()-130,panel.getHeight()-70);
+            g.drawString("X: "+player.getPlayerX(),panel.getWidth()-50,panel.getHeight()-70);
+            g.drawString("Y: "+player.getPlayerY(),panel.getWidth()-130,panel.getHeight()-70);
             g.drawString("Jumping: "+engine.isJumping(),panel.getWidth()-130,panel.getHeight()-120);
             g.drawString("VV: "+engine.getVerticalVelocity(),panel.getWidth()-130,panel.getHeight()-170);
             g.drawString("Falling: "+engine.isFalling(),panel.getWidth()-130,panel.getHeight()-210);
