@@ -54,10 +54,10 @@ public class GamePanel extends JPanel implements Runnable {
             platforms.add(new Rectangle((int) (Math.random() * GameConfig.PLATFORM_MAX_X) + GameConfig.PLATFORM_MIN_X, y, GameConfig.PLATFORM_WIDTH, GameConfig.PLATFORM_HEIGHT));
         }
 
+        //Initialize turrets with random vertical values
         for (Rectangle platform : platforms) {
             turrets.add(new Turret((int) (Math.random() * 100)>=50 ? 0 : GameConfig.SCREEN_WIDTH, platform.y));
         }
-
 
         //Initialize coin array
         coins = new Ellipse2D.Double[platforms.size()];

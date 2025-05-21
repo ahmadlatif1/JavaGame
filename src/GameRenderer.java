@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public class GameRenderer {
 
+    private static int timer = 12;
+
     public void render(Graphics g, GameEngine engine, Player player, ArrayList<Rectangle> platforms, Ellipse2D.Double[] coins, boolean devMode, boolean gameOver, int groundLevel, GamePanel panel) {
         // Cast to Graphics2D for better control
         Graphics2D g2d = (Graphics2D) g;
@@ -16,8 +18,18 @@ public class GameRenderer {
         g2d.setColor(Color.WHITE);
         g2d.drawLine(0, groundLevel, panel.getWidth(), groundLevel);
 
+        if(timer>0 && engine.isHit()){
+            timer--;
+        }else{
+            timer=12;
+            engine.setHit(false);
+        }
         // Draw player
+        if(engine.isHit()){
+        g2d.setColor(Color.RED);
+        }else{
         g2d.setColor(Color.GREEN);
+        }
         g2d.fillRect(player.getPlayerX(), player.getPlayerY(), player.getPlayerWidth(), player.getPlayerHeight());
 
         // Draw platforms
@@ -46,7 +58,7 @@ public class GameRenderer {
         g2d.setColor(Color.GREEN);
         g2d.setFont(new Font("Arial", Font.ITALIC, 20));
         g2d.drawString("Score: " + player.getPlayerScore(), 50, 50);
-
+        // Draw health
         g2d.drawString("Health: " + player.getPlayerHealth(), 50, 80);
 
         // Game over message

@@ -54,35 +54,27 @@ public class Player {
         this.playerRect.x = playerX;
     }
 
-    public int getPlayerHeight() {
-        return GameConfig.PLAYER_HEIGHT;
-    }
+    public int getPlayerHeight() { return GameConfig.PLAYER_HEIGHT;}
 
     public int getPlayerWidth() {
         return GameConfig.PLAYER_WIDTH;
     }
 
-    public Rectangle getPlayerRect() {
-        return playerRect;
-    }
+    public Rectangle getPlayerRect() { return playerRect;}
 
-    public void setPlayerScore(int score) {
-        this.score = score;
-    }
+    public void setPlayerScore(int score) { this.score = score;}
 
-    public int getPlayerScore() {
-        return score;
-    }
+    public int getPlayerScore() { return score; }
 
-    public void setjumpStrength(int jumpStrength) {
+    public void setJumpStrength(int jumpStrength) {
         this.jumpStrength = jumpStrength;
     }
 
-    public void setplayerSpeed(int playerSpeed) {
+    public void setPlayerSpeed(int playerSpeed) {
         this.playerSpeed = playerSpeed;
     }
 
-    public int getplayerSpeed() {
+    public int getPlayerSpeed() {
         return playerSpeed;
     }
 

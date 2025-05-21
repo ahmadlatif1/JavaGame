@@ -17,8 +17,11 @@ public class GameEngine {
     private boolean isDoubleJumping = false;
     private boolean canDoubleJump = false;
     private boolean gameOver = false;
+    private boolean canRandomizePlatforms = false;
+    private boolean isHit = false;
 
     private long lastCoinTime = System.currentTimeMillis();
+    private long lastPlatformTime = System.currentTimeMillis();
 
     //Constructor
     public GameEngine(Player player, ArrayList<Rectangle> platforms, Ellipse2D.Double[] coins, ArrayList<Turret> turrets) {
@@ -32,6 +35,13 @@ public class GameEngine {
     //Getters Setters
     public int getVerticalVelocity() {
         return verticalVelocity;
+    }
+
+    public boolean isHit() {
+        return isHit;
+    }
+    public void setHit(boolean hit) {
+        isHit = hit;
     }
 
     public void setGroundLevel(int groundLevel) {
@@ -66,6 +76,7 @@ public class GameEngine {
         checkPowerUps();
         updateTurrets();
         CheckProjectileCollisions();
+        randomizePlatforms();
 
         if(player.getPlayerHealth()<=0){
             gameOver=true;
@@ -162,10 +173,12 @@ public class GameEngine {
         }
     }
 
+    // Checks for collisions between player and projectiles, updates player health accordingly
     private void CheckProjectileCollisions(){
         for (Turret turret : turrets) {
             if (turret.getProjectile() == null) continue;
             if (player.getPlayerRect().intersects(turret.getProjectile().self())) {
+                this.isHit = true;
                 player.setPlayerHealth(player.getPlayerHealth() - 15);
                 turret.setNullProjectile();
                 turret.setNextFireTime(System.currentTimeMillis()+(long)(Math.random()*GameConfig.PROJECTILE_FIRE_COOLDOWN_INTERVAL_MS/2)+GameConfig.PROJECTILE_FIRE_COOLDOWN_INTERVAL_MS/2);
@@ -189,19 +202,37 @@ public class GameEngine {
     // Activates power-ups based on player's score
     private void checkPowerUps() {
         if (player.getPlayerScore() >= GameConfig.POWER_UP_SPEED_SCORE) {
-            player.setplayerSpeed(GameConfig.POWER_UP_SPEED);
+            player.setPlayerSpeed(GameConfig.POWER_UP_SPEED);
         }
         if (player.getPlayerScore() >= GameConfig.POWER_UP_JUMP_SCORE) {
-            player.setjumpStrength(GameConfig.POWER_UP_JUMP_STRENGTH);
+            player.setJumpStrength(GameConfig.POWER_UP_JUMP_STRENGTH);
         }
         if (player.getPlayerScore() >= GameConfig.POWER_UP_DOUBLE_JUMP_SCORE) {
             canDoubleJump = true;
         }
+        if(player.getPlayerScore() >= GameConfig.PENALTY_RANDOM_PLATFORMS){
+            canRandomizePlatforms=true;
+        }
     }
 
+    // Updates turrets, including their projectile positions and firing intervals
     private void updateTurrets(){
         for(Turret turret : turrets){
             turret.update(System.currentTimeMillis());
+        }
+    }
+
+    // Randomizes platforms positions at regular intervals after a score milestone
+    private void randomizePlatforms(){
+        if(canRandomizePlatforms) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastPlatformTime >= GameConfig.PENALTY_RANDOM_PLATFORMS_INTERVAL) {
+                platforms.clear();
+                for (int y = GameConfig.PLATFORM_START_Y; y >= GameConfig.PLATFORM_END_Y; y -= GameConfig.PLATFORM_SPACING) {
+                    platforms.add(new Rectangle((int) (Math.random() * GameConfig.PLATFORM_MAX_X) + GameConfig.PLATFORM_MIN_X, y, GameConfig.PLATFORM_WIDTH, GameConfig.PLATFORM_HEIGHT));
+                }
+                lastPlatformTime = currentTime;
+            }
         }
     }
 }
