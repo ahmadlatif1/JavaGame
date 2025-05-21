@@ -110,6 +110,10 @@ public class GameEngine {
         player.moveRight();
     }
 
+    public void moveDown(){
+        player.moveDown();
+    }
+
     // Handles game physics including gravity, platform collision, and boundaries
     private void applyPhysics() {
         if (!isOnPlatform && player.getPlayerY() < groundLevel - player.getPlayerHeight()) {

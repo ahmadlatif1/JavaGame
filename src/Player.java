@@ -26,6 +26,9 @@ public class Player {
         this.playerX += playerSpeed;
         this.playerRect.x = this.playerX;
     }
+    public void moveDown(){
+        setPlayerY(getPlayerY()+12);
+    }
 
     public void jump() {
         this.playerY += jumpStrength;

@@ -22,7 +22,7 @@ public class GamePanel extends JPanel implements Runnable {
     private boolean gameOver = false;
     private boolean leftPressed = false;
     private boolean rightPressed = false;
-
+    private boolean downpressed=false;
     //Constructor
     public GamePanel() {
         this.setBackground(Color.BLACK);
@@ -136,6 +136,10 @@ public class GamePanel extends JPanel implements Runnable {
         if (rightPressed) {
             engine.moveRight();
         }
+        if (downpressed){
+            downpressed=false;
+            engine.moveDown();
+        }
     }
 
     //The update method gets called inside the game loop
@@ -156,9 +160,12 @@ public class GamePanel extends JPanel implements Runnable {
         if (key == KeyEvent.VK_RIGHT) {
             rightPressed = true;
         }
+        if (key==KeyEvent.VK_DOWN){
+            downpressed=true;
+        }
 
         //Space key for jumping and double jumping
-        if (key == KeyEvent.VK_SPACE ){
+        if (key == KeyEvent.VK_SPACE || key== KeyEvent.VK_UP){
             engine.jump();
         }
 
@@ -177,6 +184,9 @@ public class GamePanel extends JPanel implements Runnable {
         }
         if (key == KeyEvent.VK_RIGHT) {
             rightPressed = false;
+        }
+        if (key==KeyEvent.VK_DOWN){
+            downpressed=false;
         }
     }
 
