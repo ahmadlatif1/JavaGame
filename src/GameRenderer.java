@@ -34,28 +34,38 @@ public class GameRenderer {
             }
         }
 
+        // Draw projectiles
+        g2d.setColor(Color.RED);
+        for(Turret turret : engine.getTurrets()) {
+            if (turret.getProjectile() != null) {
+                g2d.fill(new Ellipse2D.Double(turret.getProjectile().getX(), turret.getProjectile().getY(), GameConfig.PROJECTILE_WIDTH, GameConfig.PROJECTILE_HEIGHT));
+            }
+        }
+
         // Draw score
         g2d.setColor(Color.GREEN);
         g2d.setFont(new Font("Arial", Font.ITALIC, 20));
         g2d.drawString("Score: " + player.getPlayerScore(), 50, 50);
 
+        g2d.drawString("Health: " + player.getPlayerHealth(), 50, 80);
+
         // Game over message
         if (gameOver) {
             g2d.setColor(Color.RED);
             g2d.setFont(new Font("Arial", Font.BOLD, 30));
-            g2d.drawString("GAME OVER", 1000 / 2 - 150, 800 / 2);
+            g2d.drawString("GAME OVER", GameConfig.SCREEN_WIDTH / 2 - 150, GameConfig.SCREEN_HEIGHT / 2);
         }
 
         // Dev mode variables
         if (devMode) {
             g2d.setColor(Color.RED);
             g2d.setFont(new Font("Arial", Font.ITALIC, 14));
-            g.drawString("X: "+player.getPlayerX(),panel.getWidth()-50,panel.getHeight()-70);
-            g.drawString("Y: "+player.getPlayerY(),panel.getWidth()-130,panel.getHeight()-70);
-            g.drawString("Jumping: "+engine.isJumping(),panel.getWidth()-130,panel.getHeight()-120);
-            g.drawString("VV: "+engine.getVerticalVelocity(),panel.getWidth()-130,panel.getHeight()-170);
-            g.drawString("Falling: "+engine.isFalling(),panel.getWidth()-130,panel.getHeight()-210);
-            g.drawString("DoubleJumping: "+engine.isDoubleJumping(),panel.getWidth()-130,panel.getHeight()-260);
+            g.drawString("X: "+player.getPlayerX(),panel.getWidth()-50,panel.getHeight()-90);
+            g.drawString("Y: "+player.getPlayerY(),panel.getWidth()-130,panel.getHeight()-90);
+            g.drawString("Jumping: "+engine.isJumping(),panel.getWidth()-130,panel.getHeight()-140);
+            g.drawString("VV: "+engine.getVerticalVelocity(),panel.getWidth()-130,panel.getHeight()-210);
+            g.drawString("Falling: "+engine.isFalling(),panel.getWidth()-130,panel.getHeight()-280);
+            g.drawString("DoubleJumping: "+engine.isDoubleJumping(),panel.getWidth()-160,panel.getHeight()-350);
         }
     }
 }

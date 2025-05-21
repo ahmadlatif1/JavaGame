@@ -6,6 +6,7 @@ public class GameEngine {
     private final Player player;
     private final ArrayList<Rectangle> platforms;
     private final Ellipse2D.Double[] coins;
+    private final ArrayList<Turret> turrets;
 
     private int groundLevel;
     private int verticalVelocity = 0;
@@ -19,13 +20,16 @@ public class GameEngine {
 
     private long lastCoinTime = System.currentTimeMillis();
 
-    public GameEngine(Player player, ArrayList<Rectangle> platforms, Ellipse2D.Double[] coins) {
+    //Constructor
+    public GameEngine(Player player, ArrayList<Rectangle> platforms, Ellipse2D.Double[] coins, ArrayList<Turret> turrets) {
         this.player = player;
         this.platforms = platforms;
         this.coins = coins;
+        this.turrets = turrets;
         this.groundLevel = 0;
     }
 
+    //Getters Setters
     public int getVerticalVelocity() {
         return verticalVelocity;
     }
@@ -50,11 +54,23 @@ public class GameEngine {
         return player;
     }
 
+    public ArrayList<Turret> getTurrets() {
+        return turrets;
+    }
+
+    //Update
     public void update() {
         applyPhysics();
         checkCoinCollisions();
         spawnCoins();
         checkPowerUps();
+        updateTurrets();
+        CheckProjectileCollisions();
+
+        if(player.getPlayerHealth()<=0){
+            gameOver=true;
+        }
+
     }
 
     // Returns true if the player has fallen below ground level
@@ -146,6 +162,17 @@ public class GameEngine {
         }
     }
 
+    private void CheckProjectileCollisions(){
+        for (Turret turret : turrets) {
+            if (turret.getProjectile() == null) continue;
+            if (player.getPlayerRect().intersects(turret.getProjectile().self())) {
+                player.setPlayerHealth(player.getPlayerHealth() - 15);
+                turret.setNullProjectile();
+                turret.setNextFireTime(System.currentTimeMillis()+(long)(Math.random()*GameConfig.PROJECTILE_FIRE_COOLDOWN_INTERVAL_MS/2)+GameConfig.PROJECTILE_FIRE_COOLDOWN_INTERVAL_MS/2);
+            }
+        }
+    }
+
     // Spawns new coins on platforms at regular intervals
     private void spawnCoins() {
         int i = (int) (Math.random() * coins.length);
@@ -169,6 +196,12 @@ public class GameEngine {
         }
         if (player.getPlayerScore() >= GameConfig.POWER_UP_DOUBLE_JUMP_SCORE) {
             canDoubleJump = true;
+        }
+    }
+
+    private void updateTurrets(){
+        for(Turret turret : turrets){
+            turret.update(System.currentTimeMillis());
         }
     }
 }

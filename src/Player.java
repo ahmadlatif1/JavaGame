@@ -1,8 +1,6 @@
 import java.awt.*;
 
 public class Player {
-    private final int PLAYER_HEIGHT = 40;
-    private final int PLAYER_WIDTH = 40;
     private int jumpStrength = -15;
     private int playerSpeed = 4;
 
@@ -16,7 +14,7 @@ public class Player {
     public Player(int x, int y) {
         this.playerX = x;
         this.playerY = y;
-        this.playerRect = new Rectangle(x, y, PLAYER_WIDTH, PLAYER_HEIGHT);
+        this.playerRect = new Rectangle(x, y, GameConfig.PLAYER_WIDTH, GameConfig.PLAYER_HEIGHT);
     }
 
     public void moveLeft() {
@@ -57,11 +55,11 @@ public class Player {
     }
 
     public int getPlayerHeight() {
-        return PLAYER_HEIGHT;
+        return GameConfig.PLAYER_HEIGHT;
     }
 
     public int getPlayerWidth() {
-        return PLAYER_WIDTH;
+        return GameConfig.PLAYER_WIDTH;
     }
 
     public Rectangle getPlayerRect() {
@@ -97,7 +95,7 @@ public class Player {
     }
 
     public void setPlayerHealth(int playerHealth) {
-        this.playerHealth = playerHealth;
+        this.playerHealth = Math.max(playerHealth, 0);
     }
 
 

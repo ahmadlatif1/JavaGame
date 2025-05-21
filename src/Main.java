@@ -9,8 +9,8 @@ public class Main {
         JFrame window = new JFrame();
 
         //set window parameters and settings
-        window.setTitle("Brick Layer");
-        window.setSize(1000, 800);
+        window.setTitle("Random Platformer");
+        window.setSize(GameConfig.SCREEN_WIDTH, GameConfig.SCREEN_HEIGHT);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setLocationRelativeTo(null);
         window.setResizable(false);
